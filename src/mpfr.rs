@@ -81,6 +81,7 @@ extern "C" {
 	fn mpfr_div(rop: mpfr_ptr, op1: mpfr_srcptr, op2: mpfr_srcptr, rnd: mpfr_rnd_t) -> c_int;
     fn mpfr_div_d(rop: mpfr_ptr, op1: mpfr_srcptr, op2: c_double, rnd: mpfr_rnd_t) -> c_int;
 	fn mpfr_neg(rop: mpfr_ptr, op: mpfr_srcptr, rnd: mpfr_rnd_t) -> c_int;
+    fn mpfr_sum(rop: mpfr_ptr, op: *const mpfr_srcptr, n: c_ulong, rnd: mpfr_rnd_t) -> c_int;
 
     // Rounding
     fn mpfr_floor(rop: mpfr_ptr, op: mpfr_srcptr) -> c_int;
@@ -567,4 +568,24 @@ impl<'b> Neg for &'b Mpfr {
     }
 }
 
+pub fn sum_create_pointer_vector(input: &[&Mpfr]) -> Mpfr {
+    unsafe {
+        let mut top = Vec::with_capacity(input.len());
+        for v in input {
+            top.push(&v.mpfr as mpfr_srcptr);
+        }
+        let mut res = Mpfr::new();
+        mpfr_sum(&mut res.mpfr, top.into_boxed_slice().as_ptr(), input.len() as c_ulong, mpfr_rnd_t::MPFR_RNDN);
+        res
+    }
+}
+
+pub fn sum_possibly_unsafe(input: &[&Mpfr]) -> Mpfr {
+    let input_p = (*input).as_ptr() as *const mpfr_srcptr;
+    unsafe {
+        let mut res = Mpfr::new();
+        mpfr_sum(&mut res.mpfr, input_p, input.len() as c_ulong, mpfr_rnd_t::MPFR_RNDN);
+        res
+    }
+}
 gen_overloads!(Mpfr);

@@ -1,4 +1,6 @@
 use super::mpfr::Mpfr;
+use super::mpfr::sum_create_pointer_vector;
+use super::mpfr::sum_possibly_unsafe;
 
 #[test]
 fn test_set() {
@@ -182,4 +184,22 @@ fn test_abs() {
     let b: Mpfr = From::<i64>::from(-1);
 
     assert!(a.abs() == b.abs());
+}
+
+#[test]
+fn test_sum_create_pointer_vector() {
+    let a: Mpfr = From::<i64>::from(1);
+    let b: Mpfr = From::<i64>::from(-1);
+    let res: Mpfr = From::<i64>::from(2);
+
+    assert!(sum_create_pointer_vector(&*(vec![&a, &a, &a, &b].into_boxed_slice())) == res);
+}
+
+#[test]
+fn test_possibly_unsafe() {
+    let a: Mpfr = From::<i64>::from(1);
+    let b: Mpfr = From::<i64>::from(-1);
+    let res: Mpfr = From::<i64>::from(2);
+
+    assert!(sum_possibly_unsafe(&*(vec![&a, &a, &a, &b].into_boxed_slice())) == res);
 }
